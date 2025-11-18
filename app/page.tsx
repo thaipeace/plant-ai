@@ -2,12 +2,43 @@
 
 import { useState } from "react";
 import InfoCollapse from "./components/InfoCollapse";
-import { Image } from "antd";
+import { Image as AntdImage } from "antd";
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+
+  const resizeImage = (file: File, maxWidth = 800, maxHeight = 800) => {
+    return new Promise<Blob>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width = width * ratio;
+          height = height * ratio;
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject("Cannot get canvas context");
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => {
+            if (blob) resolve(blob);
+            else reject("Image compression failed");
+          },
+          "image/jpeg",
+          0.7
+        ); // adjust quality here
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -15,7 +46,7 @@ export default function Home() {
 
     setLoading(true);
 
-    // Convert file to Base64
+    const compressedBlob = await resizeImage(file);
     const reader = new FileReader();
     reader.onload = async () => {
       const base64 = (reader.result as string).split(",")[1];
@@ -33,7 +64,7 @@ export default function Home() {
       setResult(data);
       setLoading(false);
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(compressedBlob);
   };
 
   return (
@@ -50,7 +81,7 @@ export default function Home() {
         </button>
       </form>
 
-      <Image
+      <AntdImage
         src={file ? URL.createObjectURL(file) : ""}
         alt="Uploaded"
         width={300}

@@ -81,7 +81,6 @@ export async function POST(request: Request) {
       },
       model: "gemini-2.5-flash-preview-09-2025", // Sử dụng model hỗ trợ JSON schema
     };
-    console.log("payload", payload);
 
     // 4. Gọi Gemini API
     const geminiResponse = await fetch(
