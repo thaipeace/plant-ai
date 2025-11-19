@@ -83,16 +83,44 @@ export async function POST(request: Request) {
     };
 
     // 4. Gọi Gemini API
-    const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      }
-    );
+    // const geminiResponse = await fetch(
+    //   `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`,
+    //   {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify(payload),
+    //   }
+    // );
+
+    const geminiResponse = {
+      ok: true,
+      json: async () => ({
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    name: "Cây Xương Rồng",
+                    place: "Sa mạc",
+                    current_status_of_plant: "Khỏe mạnh",
+                    edible_parts_and_how_to_cook: "Không có phần ăn được",
+                    poisonous_parts: "Không có phần độc",
+                    how_to_grow_and_take_care:
+                      "Cần nhiều ánh sáng mặt trời và ít nước",
+                    useful_advices: "Thích hợp cho người mới bắt đầu trồng cây",
+                    is_plant: true,
+                  }),
+                },
+              ],
+            },
+          },
+        ],
+      }),
+      text: async () => "Simulated error response",
+    };
 
     if (!geminiResponse.ok) {
       const errorText = await geminiResponse.text();
