@@ -38,7 +38,11 @@ interface PlantAnalysisCardProps {
 }
 
 const PlantAnalysisCard: React.FC<PlantAnalysisCardProps> = ({ data }) => {
-  if (!data.is_plant) {
+  if (!data) {
+    return null; // Hoặc hiển thị một placeholder/loading state nếu cần
+  }
+
+  if (data && !data.is_plant) {
     return (
       <Card className="border-red-200 bg-red-50 w-full max-w-sm md:max-w-2xl shadow-sm">
         <div className="flex items-center text-red-600 mb-2">
@@ -70,65 +74,63 @@ const PlantAnalysisCard: React.FC<PlantAnalysisCardProps> = ({ data }) => {
         borderBottom: "1px solid #d9f7be",
       }}
     >
-      {/* Responsive Descriptions: 1 cột trên xs/sm, 2 cột trên md */}
-      <Descriptions
-        bordered
-        column={{ xs: 1, sm: 1, md: 2 }}
-        size="small"
-        className="ant-descriptions-custom"
-      >
-        <Descriptions.Item
-          label={
+      <div className="desc">
+        <div className="desc-item span-2">
+          <div className="desc-label">
             <span className="flex items-center">
               <MapPin className="w-4 h-4 mr-1" /> Nơi sống
             </span>
-          }
-          span={2}
-        >
-          {data.place}
-        </Descriptions.Item>
+          </div>
+          <div className="desc-value">{data.place}</div>
+        </div>
 
-        <Descriptions.Item
-          label={
+        <div className="desc-item span-2">
+          <div className="desc-label">
             <span className="flex items-center">
               <Info className="w-4 h-4 mr-1" /> Tình trạng
             </span>
-          }
-          span={2}
-        >
-          <Tag color="blue">{data.current_status_of_plant}</Tag>
-        </Descriptions.Item>
+          </div>
+          <div className="desc-value">
+            <span className="tag tag-blue">{data.current_status_of_plant}</span>
+          </div>
+        </div>
 
-        <Descriptions.Item
-          label={
+        <div className="desc-item span-2">
+          <div className="desc-label">
             <span className="flex items-center">
               <Utensils className="w-4 h-4 mr-1" /> Ăn uống
             </span>
-          }
-          span={2}
-        >
-          {data.edible_parts_and_how_to_cook}
-        </Descriptions.Item>
+          </div>
+          <div className="desc-value">{data.edible_parts_and_how_to_cook}</div>
+        </div>
 
-        <Descriptions.Item
-          label={
+        <div className="desc-item span-2">
+          <div className="desc-label label-danger">
             <span className="flex items-center text-red-500">
               <AlertTriangle className="w-4 h-4 mr-1" /> Độc tố
             </span>
-          }
-          span={2}
-        >
-          <Text type="danger">{data.poisonous_parts}</Text>
-        </Descriptions.Item>
+          </div>
+          <div className="desc-value text-danger">{data.poisonous_parts}</div>
+        </div>
 
-        <Descriptions.Item label="Chăm sóc" span={2}>
-          {data.how_to_grow_and_take_care}
-        </Descriptions.Item>
+        <div className="desc-item span-2">
+          <div className="desc-label">
+            <span className="flex items-center">
+              <Leaf className="w-4 h-4 mr-1" /> Chăm sóc
+            </span>
+          </div>
+          <div className="desc-value">{data.how_to_grow_and_take_care}</div>
+        </div>
 
-        <Descriptions.Item label="Lời khuyên" span={2}>
-          <Text italic>{data.useful_advices}</Text>
-        </Descriptions.Item>
-      </Descriptions>
+        <div className="desc-item span-2">
+          <div className="desc-label">
+            <span className="flex items-center">
+              <Sprout className="w-4 h-4 mr-1" /> Lời khuyên
+            </span>
+          </div>
+          <div className="desc-value italic">{data.useful_advices}</div>
+        </div>
+      </div>
     </Card>
   );
 };

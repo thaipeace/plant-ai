@@ -11,29 +11,5 @@ export default function Home() {
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
-  return (
-    // <div style={{ padding: "2rem" }}>
-    //   <h1>Plant AI Analyzer</h1>
-    //   <form onSubmit={handleSubmit}>
-    //     <input
-    //       type="file"
-    //       accept="image/*"
-    //       onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-    //     />
-    //     <button type="submit" disabled={loading}>
-    //       {loading ? "Analyzing..." : "Analyze Plant"}
-    //     </button>
-    //   </form>
-
-    //   <AntdImage
-    //     src={file ? URL.createObjectURL(file) : ""}
-    //     alt="Uploaded"
-    //     width={300}
-    //     height={300}
-    //   />
-
-    //   {result && <InfoCollapse data={result} />}
-    // </div>
-    <PlantAnnalistClient />
-  );
+  return <PlantAnnalistClient />;
 }

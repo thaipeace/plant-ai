@@ -24,3 +24,82 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.desc {
+  display: grid;
+  grid-template-columns: 1fr;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.desc-item {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.desc-item:last-child {
+  border-bottom: none;
+}
+
+.desc-label {
+  padding: 12px;
+  font-weight: 600;
+  background: #fafafa;
+  border-right: 1px solid #e5e7eb;
+}
+
+.desc-value {
+  padding: 12px;
+}
+
+.icon {
+  margin-right: 6px;
+}
+
+.tag {
+  padding: 2px 6px;
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+.tag-blue {
+  background: #e0f0ff;
+  color: #1677ff;
+}
+
+.label-danger {
+  color: #dc2626;
+}
+
+.text-danger {
+  color: #dc2626;
+}
+
+.italic {
+  font-style: italic;
+}
+
+/* Responsive: 2 columns at >=768px */
+@media (min-width: 768px) {
+  .desc {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .desc-item {
+    border-bottom: none;
+    border-right: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+    grid-template-columns: 180px 1fr;
+  }
+
+  .desc-item:nth-child(2n) {
+    border-right: none;
+  }
+
+  /* span-2 = full width (like Antd span={{ xs:1, md:2 }}) */
+  .span-2 {
+    grid-column: span 2;
+  }
+}

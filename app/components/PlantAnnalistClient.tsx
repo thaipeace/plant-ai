@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect, useRef } from "react";
 import {
   Layout,
@@ -5,7 +7,7 @@ import {
   Button,
   Typography,
   Upload,
-  message,
+  notification,
   Spin,
   Avatar,
   Space,
@@ -25,27 +27,10 @@ import {
 } from "@ant-design/icons";
 import { Leaf } from "lucide-react";
 import PlantAnalysisCard from "./PlantAnalysisCard";
+import { IPlantAnalysisData } from "../type";
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
-
-// -----------------------------------------------------------------------------
-// 1. INTERFACES VÀ KIỂU DỮ LIỆU NGHIÊM NGẶT
-// -----------------------------------------------------------------------------
-
-/**
- * Interface cho dữ liệu phân tích cây trồng trả về từ API (hoặc Mock Data)
- */
-interface IPlantAnalysisData {
-  is_plant: boolean;
-  name: string;
-  place: string;
-  current_status_of_plant: string;
-  edible_parts_and_how_to_cook: string;
-  poisonous_parts: string;
-  how_to_grow_and_take_care: string;
-  useful_advices: string;
-}
 
 /**
  * Interface cho cấu trúc tin nhắn trong giao diện chat
@@ -57,26 +42,6 @@ interface IMessage {
   isError?: boolean; // Chỉ có ở tin nhắn ai
   timestamp: Date;
 }
-
-// -----------------------------------------------------------------------------
-// 2. MOCK DATA (Sử dụng kiểu IPlantAnalysisData)
-// -----------------------------------------------------------------------------
-
-const MOCK_PLANT_DATA: IPlantAnalysisData = {
-  name: "Cây Xương Rồng Bát Tiên (Euphorbia milii)",
-  place:
-    "Vùng đất khô cằn, có thể trồng trong chậu, thích hợp với khí hậu nhiệt đới và cận nhiệt đới.",
-  current_status_of_plant: "Cây khỏe mạnh, đang ra hoa (màu đỏ tươi).",
-  edible_parts_and_how_to_cook:
-    "Không ăn được. Cây này chủ yếu được trồng làm cảnh vì hoa và hình dáng đẹp.",
-  poisonous_parts:
-    "Có. Nhựa màu trắng sữa của cây chứa chất độc (diterpene esters) có thể gây kích ứng da, mắt và độc khi nuốt phải.",
-  how_to_grow_and_take_care:
-    "Trồng trong đất thoát nước tốt. Tưới nước khi đất khô hoàn toàn. Cần ánh nắng trực tiếp ít nhất 6 giờ mỗi ngày. Nhiệt độ lý tưởng: 18°C - 35°C.",
-  useful_advices:
-    "Cần đeo găng tay khi cắt tỉa hoặc xử lý cây để tránh tiếp xúc với nhựa. Giữ xa tầm tay trẻ em và vật nuôi.",
-  is_plant: true,
-};
 
 // -----------------------------------------------------------------------------
 // 3. HELPER FUNCTIONS
@@ -94,25 +59,30 @@ const getBase64 = (file: File): Promise<string> =>
 // 5. MAIN COMPONENT (PlantAnnalistClient)
 // -----------------------------------------------------------------------------
 function PlantAnnalistClient() {
+  const [api, contextHolder] = notification.useNotification();
+
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [uploading, setUploading] = useState<boolean>(false);
   const [result, setResult] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auth Mock
   const user = { uid: "mock-user-id", isAnonymous: true };
   const handleLogin = () =>
-    message.info("Đăng nhập bị vô hiệu hóa trong chế độ Mock.");
+    api.info({ message: "Đăng nhập bị vô hiệu hóa trong chế độ Mock." });
   const handleLogout = () =>
-    message.info("Đăng xuất bị vô hiệu hóa trong chế độ Mock.");
+    api.info({ message: "Đăng xuất bị vô hiệu hóa trong chế độ Mock." });
 
   // Auto scroll to bottom
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: "smooth" });
     }
+
+    console.log("Messages updated:", messages);
   }, [messages, loading]);
 
   const resizeImage = (file: File, maxWidth = 800, maxHeight = 800) => {
@@ -180,7 +150,10 @@ function PlantAnnalistClient() {
     const isJpgOrPng =
       rawFile.type === "image/jpeg" || rawFile.type === "image/png";
     if (!isJpgOrPng) {
-      message.error("Chỉ chấp nhận file JPG/PNG!");
+      queueMicrotask(() => {
+        setError("Chỉ chấp nhận file JPG/PNG!");
+      });
+
       return Upload.LIST_IGNORE;
     }
 
@@ -191,7 +164,7 @@ function PlantAnnalistClient() {
       // 1. Thêm tin nhắn của User vào Chat
       const userMsg: IMessage = {
         role: "user",
-        content: "Cây này là cay gì?",
+        content: "Cây này là cây gì?",
         image: base64,
         timestamp: new Date(),
       };
@@ -206,7 +179,7 @@ function PlantAnnalistClient() {
       // 3. Chọn kết quả Mock
       // const mockResult: IPlantAnalysisData = MOCK_PLANT_DATA;
     } catch (err) {
-      message.error("Lỗi xử lý ảnh Mock");
+      setError("Lỗi xử lý ảnh Mock");
     } finally {
       setLoading(false);
       setUploading(false);
@@ -215,6 +188,11 @@ function PlantAnnalistClient() {
   };
 
   useEffect(() => {
+    if (error) api.error({ message: error });
+  }, [error]);
+
+  useEffect(() => {
+    if (!result) return;
     // 4. Thêm phản hồi của AI
     const aiMsg: IMessage = {
       role: "ai",
@@ -231,10 +209,12 @@ function PlantAnnalistClient() {
 
   // --- Render Logic ---
   const hasData: boolean = messages.length > 0;
+  console.log("Rendering PlantAnnalistClient, hasData:", hasData);
 
   return (
     <ConfigProvider>
       <Layout className="h-screen bg-white font-sans">
+        {contextHolder}
         {/* 1. Header Fixed (Sử dụng px-4 cho mobile, px-8 cho desktop) */}
         <Header className="bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-8 sticky top-0 z-50">
           <div className="flex items-center space-x-2">
@@ -397,7 +377,7 @@ function PlantAnnalistClient() {
                   multiple={false}
                   showUploadList={false}
                   beforeUpload={handleBeforeUpload}
-                  className="bg-white border-2 border-dashed border-indigo-300 rounded-xl hover:border-indigo-500 transition-colors group"
+                  className="bg-white border-dashed border-indigo-300 rounded-xl hover:border-indigo-500 transition-colors group"
                   disabled={loading}
                 >
                   <div className="p-8">

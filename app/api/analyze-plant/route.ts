@@ -1,9 +1,26 @@
+import { IPlantAnalysisData } from "@/app/type";
 import { NextResponse } from "next/server";
 
 // Đảm bảo bạn đã cài đặt: npm install @google/generative-ai
 // Hoặc chúng ta sẽ dùng fetch() trực tiếp để giữ nó đơn giản
 // Lấy API key từ biến môi trường
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+const MOCK_PLANT_DATA: IPlantAnalysisData = {
+  name: "Cây Xương Rồng Bát Tiên (Euphorbia milii)",
+  place:
+    "Vùng đất khô cằn, có thể trồng trong chậu, thích hợp với khí hậu nhiệt đới và cận nhiệt đới.",
+  current_status_of_plant: "Cây khỏe mạnh, đang ra hoa (màu đỏ tươi).",
+  edible_parts_and_how_to_cook:
+    "Không ăn được. Cây này chủ yếu được trồng làm cảnh vì hoa và hình dáng đẹp.",
+  poisonous_parts:
+    "Có. Nhựa màu trắng sữa của cây chứa chất độc (diterpene esters) có thể gây kích ứng da, mắt và độc khi nuốt phải.",
+  how_to_grow_and_take_care:
+    "Trồng trong đất thoát nước tốt. Tưới nước khi đất khô hoàn toàn. Cần ánh nắng trực tiếp ít nhất 6 giờ mỗi ngày. Nhiệt độ lý tưởng: 18°C - 35°C.",
+  useful_advices:
+    "Cần đeo găng tay khi cắt tỉa hoặc xử lý cây để tránh tiếp xúc với nhựa. Giữ xa tầm tay trẻ em và vật nuôi.",
+  is_plant: true,
+};
 
 // Đây là JSON Schema mà Gemini sẽ tuân theo
 const plantSchema = {
@@ -83,44 +100,34 @@ export async function POST(request: Request) {
     };
 
     // 4. Gọi Gemini API
-    // const geminiResponse = await fetch(
-    //   `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`,
-    //   {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify(payload),
-    //   }
-    // );
+    const geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
 
-    const geminiResponse = {
-      ok: true,
-      json: async () => ({
-        candidates: [
-          {
-            content: {
-              parts: [
-                {
-                  text: JSON.stringify({
-                    name: "Cây Xương Rồng",
-                    place: "Sa mạc",
-                    current_status_of_plant: "Khỏe mạnh",
-                    edible_parts_and_how_to_cook: "Không có phần ăn được",
-                    poisonous_parts: "Không có phần độc",
-                    how_to_grow_and_take_care:
-                      "Cần nhiều ánh sáng mặt trời và ít nước",
-                    useful_advices: "Thích hợp cho người mới bắt đầu trồng cây",
-                    is_plant: true,
-                  }),
-                },
-              ],
-            },
-          },
-        ],
-      }),
-      text: async () => "Simulated error response",
-    };
+    // const geminiResponse = {
+    //   ok: true,
+    //   json: async () => ({
+    //     candidates: [
+    //       {
+    //         content: {
+    //           parts: [
+    //             {
+    //               text: JSON.stringify(MOCK_PLANT_DATA),
+    //             },
+    //           ],
+    //         },
+    //       },
+    //     ],
+    //   }),
+    //   text: async () => "Simulated error response",
+    // };
 
     if (!geminiResponse.ok) {
       const errorText = await geminiResponse.text();
