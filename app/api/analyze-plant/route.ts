@@ -7,18 +7,34 @@ import { NextResponse } from "next/server";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 const MOCK_PLANT_DATA: IPlantAnalysisData = {
-  name: "Cây Xương Rồng Bát Tiên (Euphorbia milii)",
-  place:
-    "Vùng đất khô cằn, có thể trồng trong chậu, thích hợp với khí hậu nhiệt đới và cận nhiệt đới.",
-  current_status_of_plant: "Cây khỏe mạnh, đang ra hoa (màu đỏ tươi).",
-  edible_parts_and_how_to_cook:
-    "Không ăn được. Cây này chủ yếu được trồng làm cảnh vì hoa và hình dáng đẹp.",
-  poisonous_parts:
-    "Có. Nhựa màu trắng sữa của cây chứa chất độc (diterpene esters) có thể gây kích ứng da, mắt và độc khi nuốt phải.",
-  how_to_grow_and_take_care:
-    "Trồng trong đất thoát nước tốt. Tưới nước khi đất khô hoàn toàn. Cần ánh nắng trực tiếp ít nhất 6 giờ mỗi ngày. Nhiệt độ lý tưởng: 18°C - 35°C.",
-  useful_advices:
-    "Cần đeo găng tay khi cắt tỉa hoặc xử lý cây để tránh tiếp xúc với nhựa. Giữ xa tầm tay trẻ em và vật nuôi.",
+  name: {
+    text: "Cây Xương Rồng Bát Tiên (Euphorbia milii)",
+    positive: null,
+  },
+  place: {
+    text: "Vùng đất khô cằn, có thể trồng trong chậu, thích hợp với khí hậu nhiệt đới và cận nhiệt đới.",
+    positive: null,
+  },
+  current_status_of_plant: {
+    text: "Cây khỏe mạnh, đang ra hoa (màu đỏ tươi).",
+    positive: true,
+  },
+  edible_parts_and_how_to_cook: {
+    text: "Không có phần nào của cây này được coi là ăn được.",
+    positive: false,
+  },
+  poisonous_parts: {
+    text: "Có. Nhựa màu trắng sữa của cây chứa chất độc (diterpene esters) có thể gây kích ứng da, mắt và độc khi nuốt phải.",
+    positive: false,
+  },
+  how_to_grow_and_take_care: {
+    text: "Trồng trong đất thoát nước tốt. Tưới nước khi đất khô hoàn toàn. Cần ánh nắng trực tiếp ít nhất 6 giờ mỗi ngày. Nhiệt độ lý tưởng: 18°C - 35°C.",
+    positive: null,
+  },
+  useful_advices: {
+    text: "Cần đeo găng tay khi cắt tỉa hoặc xử lý cây để tránh tiếp xúc với nhựa. Giữ xa tầm tay trẻ em và vật nuôi.",
+    positive: false,
+  },
   is_plant: true,
 };
 
@@ -26,15 +42,67 @@ const MOCK_PLANT_DATA: IPlantAnalysisData = {
 const plantSchema = {
   type: "OBJECT",
   properties: {
-    name: { type: "STRING" },
-    place: { type: "STRING" },
-    current_status_of_plant: { type: "STRING" },
-    edible_parts_and_how_to_cook: { type: "STRING" },
-    poisonous_parts: { type: "STRING" },
-    how_to_grow_and_take_care: { type: "STRING" },
-    useful_advices: { type: "STRING" },
-    is_plant: { type: "BOOLEAN" },
+    name: {
+      type: "OBJECT",
+      properties: {
+        text: { type: "STRING" },
+        positive: { type: "BOOLEAN", nullable: true },
+      },
+    },
+
+    place: {
+      type: "OBJECT",
+      properties: {
+        text: { type: "STRING" },
+        positive: { type: "BOOLEAN", nullable: true },
+      },
+    },
+
+    current_status_of_plant: {
+      type: "OBJECT",
+      properties: {
+        text: { type: "STRING" },
+        positive: { type: "BOOLEAN", nullable: true },
+      },
+    },
+
+    edible_parts_and_how_to_cook: {
+      type: "OBJECT",
+      properties: {
+        text: { type: "STRING" },
+        positive: { type: "BOOLEAN", nullable: true },
+      },
+    },
+
+    poisonous_parts: {
+      type: "OBJECT",
+      properties: {
+        text: { type: "STRING" },
+        positive: { type: "BOOLEAN", nullable: true },
+      },
+    },
+
+    how_to_grow_and_take_care: {
+      type: "OBJECT",
+      properties: {
+        text: { type: "STRING" },
+        positive: { type: "BOOLEAN", nullable: true },
+      },
+    },
+
+    useful_advices: {
+      type: "OBJECT",
+      properties: {
+        text: { type: "STRING" },
+        positive: { type: "BOOLEAN", nullable: true },
+      },
+    },
+
+    is_plant: {
+      type: "BOOLEAN",
+    },
   },
+
   required: ["name", "is_plant"],
 };
 
@@ -66,9 +134,13 @@ export async function POST(request: Request) {
     const lang = langHeader?.startsWith("vi") ? "Tiếng Việt" : "English";
 
     // 3. Chuẩn bị prompt và payload cho Gemini
-    const systemPrompt = `Bạn là trợ lý phân tích thực vật chuyên nghiệp. Phân tích hình ảnh được cung cấp.
-        Nếu là thực vật, trả về một đối tượng JSON tuân thủ nghiêm ngặt schema, điền tất cả các trường bằng ngôn ngữ: ${lang}. Đặt 'is_plant' thành true.
-        Nếu KHÔNG phải là thực vật, trả về một đối tượng JSON với 'is_plant' là false, và các trường khác là 'N/A' (hoặc 'Không phải cây trồng' nếu là tiếng Việt).`;
+    const systemPrompt = `
+      Bạn là trợ lý phân tích thực vật chuyên nghiệp. Phân tích hình ảnh được cung cấp.
+      Ngắn gọn, chính xác và đầy đủ.
+      Nếu là thực vật, trả về một đối tượng JSON tuân thủ nghiêm ngặt schema, điền tất cả các trường bằng ngôn ngữ: ${lang}. Đặt 'is_plant' thành true.
+      Nếu KHÔNG phải là thực vật, trả về một đối tượng JSON với 'is_plant' là false, và các trường khác là 'N/A' (hoặc 'Không phải cây trồng' nếu là tiếng Việt).
+      Lưu lại context vì có thể hình sau sẽ cùng một cây.
+    `;
 
     const userQuery =
       "Phân tích hình ảnh này và cung cấp thông tin toàn diện về loài cây bằng định dạng JSON được chỉ định.";

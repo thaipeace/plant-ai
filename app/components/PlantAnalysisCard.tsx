@@ -8,26 +8,9 @@ import {
   MapPin,
   Info,
 } from "lucide-react";
+import { IPlantAnalysisData } from "../type";
 
 const { Text } = Typography;
-
-// -----------------------------------------------------------------------------
-// 1. INTERFACES VÀ KIỂU DỮ LIỆU NGHIÊM NGẶT
-// -----------------------------------------------------------------------------
-
-/**
- * Interface cho dữ liệu phân tích cây trồng trả về từ API (hoặc Mock Data)
- */
-interface IPlantAnalysisData {
-  is_plant: boolean;
-  name: string;
-  place: string;
-  current_status_of_plant: string;
-  edible_parts_and_how_to_cook: string;
-  poisonous_parts: string;
-  how_to_grow_and_take_care: string;
-  useful_advices: string;
-}
 
 // -----------------------------------------------------------------------------
 // 4. COMPONENTS
@@ -65,7 +48,7 @@ const PlantAnalysisCard: React.FC<PlantAnalysisCardProps> = ({ data }) => {
       title={
         <div className="flex items-center">
           <Sprout className="w-5 h-5 mr-2 text-green-600" />
-          <span className="text-green-700 font-bold">{data.name}</span>
+          <span className="text-green-700 font-bold">{data.name.text}</span>
         </div>
       }
       className="w-full max-w-sm md:max-w-3xl border-green-100 shadow-md"
@@ -81,7 +64,7 @@ const PlantAnalysisCard: React.FC<PlantAnalysisCardProps> = ({ data }) => {
               <MapPin className="w-4 h-4 mr-1" /> Nơi sống
             </span>
           </div>
-          <div className="desc-value">{data.place}</div>
+          <div className="desc-value">{data.place.text}</div>
         </div>
 
         <div className="desc-item span-2">
@@ -90,8 +73,16 @@ const PlantAnalysisCard: React.FC<PlantAnalysisCardProps> = ({ data }) => {
               <Info className="w-4 h-4 mr-1" /> Tình trạng
             </span>
           </div>
-          <div className="desc-value">
-            <span className="tag tag-blue">{data.current_status_of_plant}</span>
+          <div
+            className={`desc-value ${
+              data.current_status_of_plant.positive
+                ? "text-green-600"
+                : "text-red-600"
+            }`}
+          >
+            <span className="tag tag-blue">
+              {data.current_status_of_plant.text}
+            </span>
           </div>
         </div>
 
@@ -101,7 +92,15 @@ const PlantAnalysisCard: React.FC<PlantAnalysisCardProps> = ({ data }) => {
               <Utensils className="w-4 h-4 mr-1" /> Ăn uống
             </span>
           </div>
-          <div className="desc-value">{data.edible_parts_and_how_to_cook}</div>
+          <div
+            className={`desc-value ${
+              data.edible_parts_and_how_to_cook.positive
+                ? "text-green-600"
+                : "text-red-600"
+            }`}
+          >
+            {data.edible_parts_and_how_to_cook.text}
+          </div>
         </div>
 
         <div className="desc-item span-2">
@@ -110,7 +109,13 @@ const PlantAnalysisCard: React.FC<PlantAnalysisCardProps> = ({ data }) => {
               <AlertTriangle className="w-4 h-4 mr-1" /> Độc tố
             </span>
           </div>
-          <div className="desc-value text-danger">{data.poisonous_parts}</div>
+          <div
+            className={`desc-value ${
+              data.poisonous_parts.positive ? "text-green-600" : "text-red-600"
+            }`}
+          >
+            {data.poisonous_parts.text}
+          </div>
         </div>
 
         <div className="desc-item span-2">
@@ -119,7 +124,9 @@ const PlantAnalysisCard: React.FC<PlantAnalysisCardProps> = ({ data }) => {
               <Leaf className="w-4 h-4 mr-1" /> Chăm sóc
             </span>
           </div>
-          <div className="desc-value">{data.how_to_grow_and_take_care}</div>
+          <div className="desc-value">
+            {data.how_to_grow_and_take_care.text}
+          </div>
         </div>
 
         <div className="desc-item span-2">
@@ -128,7 +135,13 @@ const PlantAnalysisCard: React.FC<PlantAnalysisCardProps> = ({ data }) => {
               <Sprout className="w-4 h-4 mr-1" /> Lời khuyên
             </span>
           </div>
-          <div className="desc-value italic">{data.useful_advices}</div>
+          <div
+            className={`desc-value ${
+              data.useful_advices.positive ? "text-green-600" : "text-red-600"
+            }`}
+          >
+            {data.useful_advices.text}
+          </div>
         </div>
       </div>
     </Card>
